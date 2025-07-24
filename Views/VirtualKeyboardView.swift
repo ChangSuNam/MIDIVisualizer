@@ -61,7 +61,7 @@ struct VirtualKeyboardView: View {
                         }
                     }
                     
-                    // Black keys with precise positioning
+                    // Black keys
                     BlackKeyView(
                         note: 61,
                         noteName: midiHandler.getNoteName(for: 61),
@@ -133,9 +133,11 @@ struct WhiteKeyView: View {
     let onPress: () -> Void
     let onRelease: () -> Void
     
+    @State private var isHovered = false
+    
     var body: some View {
         RoundedRectangle(cornerRadius: 8)
-            .fill(isPressed ? Color.gray.opacity(0.8) : Color.white)
+            .fill(isPressed ? Color.gray.opacity(0.8) : (isHovered ? Color.gray.opacity(0.3) : Color.white))
             .overlay(
                 VStack {
                     Spacer()
@@ -151,6 +153,7 @@ struct WhiteKeyView: View {
             )
             .scaleEffect(isPressed ? 0.95 : 1.0)
             .animation(.easeInOut(duration: 0.1), value: isPressed)
+            #if os(iOS)
             .onLongPressGesture(
                 minimumDuration: 0,
                 maximumDistance: .infinity,
@@ -163,6 +166,29 @@ struct WhiteKeyView: View {
                 },
                 perform: {}
             )
+            #else
+            .onHover { hovering in
+                isHovered = hovering
+            }
+            .onContinuousHover { phase in
+                switch phase {
+                case .active:
+                    if !isPressed {
+                        onPress()
+                    }
+                case .ended:
+                    if isPressed {
+                        onRelease()
+                    }
+                }
+            }
+            .onTapGesture {
+                onPress()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    onRelease()
+                }
+            }
+            #endif
     }
 }
 
@@ -174,9 +200,11 @@ struct BlackKeyView: View {
     let onPress: () -> Void
     let onRelease: () -> Void
     
+    @State private var isHovered = false
+    
     var body: some View {
         RoundedRectangle(cornerRadius: 6)
-            .fill(isPressed ? Color.gray : Color.black)
+            .fill(isPressed ? Color.gray : (isHovered ? Color.gray.opacity(0.8) : Color.black))
             .frame(width: 35, height: 90)
             .overlay(
                 VStack {
@@ -191,6 +219,7 @@ struct BlackKeyView: View {
             .animation(.easeInOut(duration: 0.1), value: isPressed)
             .offset(x: position)
             .zIndex(1) // Black keys on top
+            #if os(iOS)
             .onLongPressGesture(
                 minimumDuration: 0,
                 maximumDistance: .infinity,
@@ -203,5 +232,28 @@ struct BlackKeyView: View {
                 },
                 perform: {}
             )
+            #else
+            .onHover { hovering in
+                isHovered = hovering
+            }
+            .onContinuousHover { phase in
+                switch phase {
+                case .active:
+                    if !isPressed {
+                        onPress()
+                    }
+                case .ended:
+                    if isPressed {
+                        onRelease()
+                    }
+                }
+            }
+            .onTapGesture {
+                onPress()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    onRelease()
+                }
+            }
+            #endif
     }
 }

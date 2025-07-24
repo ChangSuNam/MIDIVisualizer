@@ -9,9 +9,9 @@ import AVFoundation
 import Foundation
 
 class AudioEngine: ObservableObject {
+    @Published var isSoundEnabled: Bool = true
     private var audioEngine: AVAudioEngine
     private var samplerNode: AVAudioUnitSampler
-    @Published var isSoundEnabled: Bool = true
     
     init() {
         audioEngine = AVAudioEngine()
@@ -20,16 +20,17 @@ class AudioEngine: ObservableObject {
     }
     
     private func setupAudio() {
-        // Configure audio session
+        #if os(iOS)
         do {
             let audioSession = AVAudioSession.sharedInstance()
             try audioSession.setCategory(.playback, mode: .default)
             try audioSession.setActive(true)
         } catch {
-            print("Error- Failed to setup audio session: \(error)")
+            print("Failed to setup audio session: \(error)")
         }
+        #endif
         
-        // Attach and connect nodes
+        // Attach and connect nodes - works on both platforms
         audioEngine.attach(samplerNode)
         audioEngine.connect(samplerNode, to: audioEngine.mainMixerNode, format: nil)
         
@@ -38,25 +39,12 @@ class AudioEngine: ObservableObject {
             try audioEngine.start()
             loadDefaultSound()
         } catch {
-            print("Error- Failed to start audio engine: \(error)")
+            print("Failed to start audio engine: \(error)")
         }
     }
     
     private func loadDefaultSound() {
-        // Load default sine wave sound
-        do {
-            // Use default General MIDI sound bank
-            try samplerNode.loadSoundBankInstrument(
-                //Add the soundfont file if deisred
-                at: Bundle.main.url(forResource: "default", withExtension: "sf2") ?? URL(fileURLWithPath: ""),
-                program: 0,
-                bankMSB: UInt8(kAUSampler_DefaultMelodicBankMSB),
-                bankLSB: UInt8(kAUSampler_DefaultBankLSB)
-            )
-        } catch {
-            // Use basic synthesis when file not provided
-            print("Could not load sound bank, using basic synthesis")
-        }
+        print("Audio engine ready with default sounds")
     }
     
     func playNote(_ note: UInt8, velocity: UInt8) {
@@ -73,4 +61,3 @@ class AudioEngine: ObservableObject {
         isSoundEnabled.toggle()
     }
 }
-

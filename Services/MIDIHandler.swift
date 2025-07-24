@@ -21,7 +21,7 @@ class MIDIHandler: ObservableObject {
     private var virtualSource: MIDIEndpointRef = 0
     private var virtualDestination: MIDIEndpointRef = 0
     
-    // MIDI note range for virtual keyboard, C4 to B4
+    // MIDI note range for virtual keyboard- C4 to B4
     let noteRange: ClosedRange<UInt8> = 60...71
     
     // Note names to be displayed
@@ -31,15 +31,15 @@ class MIDIHandler: ObservableObject {
         // Create MIDI client
         let clientName = "MIDIVisualizerClient" as CFString
         let status = MIDIClientCreateWithBlock(clientName, &midiClient) { notificationPointer in
-            // MIDI notifications
-            let notification = notificationPointer.pointee
-                switch notification.messageID {
-                case .msgSetupChanged:
-                    print("MIDI setup changed")
-                default:
-                    print("Received MIDI notification: \(notification.messageID)")
-                }
-        }
+                 // MIDI notifications
+                 let notification = notificationPointer.pointee
+                     switch notification.messageID {
+                     case .msgSetupChanged:
+                         print("MIDI setup changed")
+                     default:
+                         print("Received MIDI notification: \(notification.messageID)")
+                     }
+             }
         
         guard status == noErr else {
             print("Failed to create MIDI client: \(status)")
@@ -66,7 +66,6 @@ class MIDIHandler: ObservableObject {
             
             if packet.length > 0 {
                 let status = bytes[0] & 0xF0
-                let channel = bytes[0] & 0x0F
                 
                 switch status {
                 case 0x90: // Note On
@@ -74,12 +73,11 @@ class MIDIHandler: ObservableObject {
                         let note = bytes[1]
                         let velocity = bytes[2]
                         if velocity > 0 {
-                            // Note On
                             DispatchQueue.main.async {
                                 self.delegate?.midiNoteOn(note: note, velocity: velocity)
                             }
                         } else {
-                            // Note On with velocity 0 is treated as Note Off
+                            // Note On with velocity 0 == Note Off
                             DispatchQueue.main.async {
                                 self.delegate?.midiNoteOff(note: note)
                             }

@@ -13,6 +13,9 @@ struct ContentView: View {
     @StateObject private var audioEngine = AudioEngine()
     @State private var showSettings = false
     
+    @Environment(\.horizontalSizeClass) var horizontalSizeClass
+    @Environment(\.verticalSizeClass) var verticalSizeClass
+    
     var body: some View {
         ZStack {
             // Background gradient
@@ -23,33 +26,92 @@ struct ContentView: View {
             )
             .ignoresSafeArea()
             
-            VStack(spacing: 0) {
-                // Header
-                HeaderView(showSettings: $showSettings)
-                    .padding(.top, 50)
-                
-                // Visualizer Area
-                VisualizerView(viewModel: visualizerViewModel)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(Color.black.opacity(0.3))
-                    .cornerRadius(20)
-                    .padding(.horizontal)
-                
-                // Virtual Keyboard
-                VirtualKeyboardView(midiHandler: midiHandler, audioEngine: audioEngine)
-                    .frame(height: 180)
-                    .padding(.horizontal)
-                    .padding(.bottom, 30)
+            if isCompact {
+                compactLayout
+            } else {
+                regularLayout
             }
         }
         .sheet(isPresented: $showSettings) {
-            SettingsView(viewModel: visualizerViewModel, audioEngine: audioEngine)
+           SettingsView(viewModel: visualizerViewModel, audioEngine: audioEngine)
         }
         .onAppear {
             midiHandler.delegate = visualizerViewModel
             midiHandler.audioEngine = audioEngine
             midiHandler.setupMIDI()
         }
+        #if os(macOS)
+        .frame(minWidth: 800, minHeight: 600)
+        #endif
+    }
+    
+    var isCompact: Bool {
+        #if os(iOS)
+        return horizontalSizeClass == .compact || verticalSizeClass == .compact
+        #else
+        return false
+        #endif
+    }
+    
+    var compactLayout: some View {
+        VStack(spacing: 0) {
+            // Header
+            HeaderView(showSettings: $showSettings)
+                .padding(.top, safeAreaTop)
+            
+            // Visualizer Area
+            VisualizerView(viewModel: visualizerViewModel)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color.black.opacity(0.3))
+                .cornerRadius(20)
+                .padding(.horizontal)
+            
+            // Virtual Keyboard
+            VirtualKeyboardView(midiHandler: midiHandler, audioEngine: audioEngine)
+                .frame(height: 180)
+                .padding(.horizontal)
+                .padding(.bottom, safeAreaBottom)
+        }
+    }
+    
+    var regularLayout: some View {
+        HStack(spacing: 0) {
+            // Left side - Keyboard
+            VStack {
+                HeaderView(showSettings: $showSettings)
+                    .padding()
+                
+                Spacer()
+                
+                VirtualKeyboardView(midiHandler: midiHandler, audioEngine: audioEngine)
+                    .frame(height: 200)
+                    .padding()
+            }
+            .frame(width: 300)
+            .background(Color.black.opacity(0.2))
+            
+            // Right side - Visualizer
+            VisualizerView(viewModel: visualizerViewModel)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color.black.opacity(0.3))
+                .padding()
+        }
+    }
+    
+    var safeAreaTop: CGFloat {
+        #if os(iOS)
+        return 50
+        #else
+        return 20
+        #endif
+    }
+    
+    var safeAreaBottom: CGFloat {
+        #if os(iOS)
+        return 30
+        #else
+        return 20
+        #endif
     }
 }
 
@@ -70,11 +132,10 @@ struct HeaderView: View {
                     .font(.title2)
                     .foregroundColor(.white)
             }
+            #if os(macOS)
+            .buttonStyle(PlainButtonStyle())
+            #endif
         }
         .padding(.horizontal)
     }
-}
-
-#Preview {
-    ContentView()
 }

@@ -13,72 +13,117 @@ struct SettingsView: View {
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
+        #if os(iOS)
         NavigationView {
-            Form {
-                Section(header: Text("Visualization Style")) {
-                    Picker("Style", selection: $viewModel.visualizationStyle) {
-                        ForEach(VisualizationStyle.allCases, id: \.self) { style in
-                            Text(style.rawValue).tag(style)
-                        }
-                    }
-                    .pickerStyle(.segmented)
-                    .frame(maxWidth: .infinity)
-                }
-                
-                Section(header: Text("Color Scheme")) {
-                    Picker("Colors", selection: $viewModel.colorScheme) {
-                        ForEach(ColorScheme.allCases, id: \.self) { scheme in
-                            HStack {
-                                ColorPreview(scheme: scheme)
-                                Text(scheme.rawValue)
-                            }
-                            .tag(scheme)
+            settingsForm
+                .navigationTitle("Settings")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button("Done") {
+                            dismiss()
                         }
                     }
                 }
+        }
+        #else
+        VStack(spacing: 0) {
+            // macOS custom header
+            HStack {
+                Text("Settings")
+                    .font(.title2)
+                    .fontWeight(.semibold)
                 
-                Section(header: Text("Animation")) {
-                    VStack(alignment: .leading) {
-                        Text("Animation Speed: \(String(format: "%.1fx", viewModel.animationSpeed))")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                        
-                        Slider(value: $viewModel.animationSpeed, in: 0.5...2.0, step: 0.1)
-                    }
-                    
-                    Toggle("Show Background Grid", isOn: $viewModel.showBackgroundGrid)
-                }
+                Spacer()
                 
-                Section(header: Text("Audio")) {
-                    Toggle("Sound Enabled", isOn: $audioEngine.isSoundEnabled)
+                Button(action: { dismiss() }) {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.title2)
+                        .foregroundColor(.secondary)
                 }
-                
-                Section(header: Text("About")) {
-                    HStack {
-                        Text("Version")
-                        Spacer()
-                        Text("1.0.0")
-                            .foregroundColor(.secondary)
-                    }
-                    
-                    HStack {
-                        Text("Developer")
-                        Spacer()
-                        Text("ChangSu Nam")
-                            .foregroundColor(.secondary)
-                    }
-                }
+                .buttonStyle(PlainButtonStyle())
             }
-            .navigationTitle("Settings")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
-                        dismiss()
+            .padding()
+            .background(Color(white: 0.1))
+            
+            Divider()
+            
+            settingsForm
+                .padding()
+        }
+        .frame(width: 400, height: 500)
+        .background(Color.black.opacity(0.9))
+        #endif
+    }
+    
+    var settingsForm: some View {
+        Form {
+            Section(header: Text("Visualization Style")) {
+                Picker("Style", selection: $viewModel.visualizationStyle) {
+                    ForEach(VisualizationStyle.allCases, id: \.self) { style in
+                        Text(style.rawValue).tag(style)
                     }
                 }
+                .pickerStyle(SegmentedPickerStyle())
+            }
+            
+            Section(header: Text("Color Scheme")) {
+                Picker("Colors", selection: $viewModel.colorScheme) {
+                    ForEach(ColorScheme.allCases, id: \.self) { scheme in
+                        HStack {
+                            ColorPreview(scheme: scheme)
+                            Text(scheme.rawValue)
+                        }
+                        .tag(scheme)
+                    }
+                }
+                #if os(macOS)
+                .pickerStyle(RadioGroupPickerStyle())
+                #endif
+            }
+            
+            Section(header: Text("Animation")) {
+                VStack(alignment: .leading) {
+                    Text("Animation Speed: \(String(format: "%.1fx", viewModel.animationSpeed))")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    
+                    Slider(value: $viewModel.animationSpeed, in: 0.5...2.0, step: 0.1)
+                }
+                
+                Toggle("Show Background Grid", isOn: $viewModel.showBackgroundGrid)
+                    #if os(macOS)
+                    .toggleStyle(CheckboxToggleStyle())
+                    #endif
+            }
+            
+            Section(header: Text("Audio")) {
+                Toggle("Sound Enabled", isOn: $audioEngine.isSoundEnabled)
+                    #if os(macOS)
+                    .toggleStyle(CheckboxToggleStyle())
+                    #endif
+            }
+            
+            Section(header: Text("About")) {
+                HStack {
+                    Text("Version")
+                    Spacer()
+                    Text("1.0.0")
+                        .foregroundColor(.secondary)
+                }
+                
+                HStack {
+                    Text("Developer")
+                    Spacer()
+                    Text("ChangSu Nam")
+                        .foregroundColor(.secondary)
+                }
+                
             }
         }
+        #if os(macOS)
+        .formStyle(.grouped)
+        #endif
     }
 }
 

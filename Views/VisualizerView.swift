@@ -94,6 +94,7 @@ struct CircleVisualizationView: View {
     }
 }
 
+
 struct BarVisualizationView: View {
     let notes: [NoteVisualization]
     let geometry: GeometryProxy
@@ -155,7 +156,7 @@ struct BarVisualizationView: View {
     
     private func calculateBarXPosition(for pitch: UInt8, in geometry: GeometryProxy) -> CGFloat {
         let leftPadding: CGFloat = 10
-        let rightPadding: CGFloat = 20
+        // let rightPadding: CGFloat = 20 // Removed unused variable
         let barWidth = geometry.size.width / 13.5
         let spacing: CGFloat = 2
         
@@ -167,10 +168,16 @@ struct BarVisualizationView: View {
     }
     
     private func calculateBarYPosition(for pitch: UInt8, in geometry: GeometryProxy) -> CGFloat {
-        // All bars start from the same baseline since they're all in octave 4
+        // Map full MIDI pitch range to vertical position
+        // Since all our notes are in octave 4 (60-71), we'll show subtle differences
+        let normalizedPitch = CGFloat(pitch - 60) / 11.0 // 0-1 range for our octave
+        let heightVariation = normalizedPitch * 50 // Up to 50 points variation
+        
         let barHeight = calculateBarHeight(for: NoteVisualization(pitch: pitch, velocity: 80, radius: 40, color: .blue, fadeOutDuration: 2.0))
         let bottomPadding: CGFloat = 60
-        return geometry.size.height - bottomPadding - barHeight / 2
+        
+        // Higher notes appear higher (lower y value)
+        return geometry.size.height - bottomPadding - barHeight / 2 - heightVariation
     }
     
     private func calculateBarHeight(for note: NoteVisualization) -> CGFloat {

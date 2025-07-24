@@ -74,7 +74,7 @@ extension VisualizerViewModel: MIDIHandlerDelegate {
         // Remove any existing visualization for this note
         activeNotes.removeAll { $0.pitch == note }
         
-        // Create new visualization
+        // Create new visualization with unique ID
         let visualization = NoteVisualization(
             pitch: note,
             velocity: velocity,
@@ -92,15 +92,18 @@ extension VisualizerViewModel: MIDIHandlerDelegate {
         // Find the visualization for this note
         guard let index = activeNotes.firstIndex(where: { $0.pitch == note }) else { return }
         
+        // Cancel any existing timer
+        noteTimers[note]?.invalidate()
+        
         // Start fade-out animation
         withAnimation(.easeOut(duration: activeNotes[index].fadeOutDuration)) {
             activeNotes[index].opacity = 0.0
         }
         
         // Remove after fade-out completes
-        let timer = Timer.scheduledTimer(withTimeInterval: activeNotes[index].fadeOutDuration, repeats: false) { _ in
-            self.activeNotes.removeAll { $0.pitch == note }
-            self.noteTimers[note] = nil
+        let timer = Timer.scheduledTimer(withTimeInterval: activeNotes[index].fadeOutDuration, repeats: false) { [weak self] _ in
+            self?.activeNotes.removeAll { $0.pitch == note }
+            self?.noteTimers[note] = nil
         }
         
         noteTimers[note] = timer
