@@ -1,6 +1,6 @@
 # 🎹 MIDI Visualizer 
 
-A clean, real-time MIDI visualization app for iOS that transforms musical notes into animated visual elements. Built with SwiftUI and Core MIDI, this app demonstrates modern iOS development practices and creative audio-visual programming.
+A clean, real-time MIDI visualization app for iOS / macOS that transforms musical notes into animated visual elements. Built with SwiftUI, Core MIDI and AVFoundation, this app demonstrates modern development practices and creative audio-visual programming.
 
 
 https://github.com/user-attachments/assets/65da7714-52f4-457a-825e-0fb4e945e174
@@ -9,7 +9,7 @@ https://github.com/user-attachments/assets/65da7714-52f4-457a-825e-0fb4e945e174
 
 ## 🎯 Overview
 
-MIDI Visualizer provides interactive music visualization experience. The app features a virtual piano keyboard that generates MIDI events, which are then visualized as animated shapes with properties mapped to musical characteristics:
+MIDI Visualizer provides an interactive music visualization experience. The app features a virtual piano keyboard that generates MIDI events, which are then visualized as animated shapes with properties mapped to musical characteristics:
 
 - **Pitch → Vertical Position**: Higher notes appear higher on screen
 - **Velocity → Size & Color Intensity**: Harder key presses create larger, more vibrant visuals
@@ -151,11 +151,14 @@ Simple audio feedback system using AVFoundation.
 
 ## 🛠 Technical Requirements
 - iOS 16.0+ (Deployment target)
+- macOS Version: macOS 13.0+ (Deployment target)
 - Xcode 16.0+ (Development)
 - Swift 5.9+
 - Frameworks: SwiftUI, Core MIDI, AVFoundation
 
-- And add this new section after Technical Requirements:
+## 🖥️ Cross-Platform Support
+- **iOS**: Full support with touch interactions
+- **macOS**: Mouse-based interaction (click to play notes)
 
 
 ## 🔧 Current Limitations & Design Choices
